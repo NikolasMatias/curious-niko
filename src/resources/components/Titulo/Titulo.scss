@@ -1,0 +1,21 @@
+@import "../../sass/layout/variables";
+
+@import "../../sass/variables";
+
+.titulo {
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+  height: 10vh;
+  justify-content: center;
+  display: flex;
+  width: 100vw;
+  text-align: center;
+
+  & > .classico {
+    background-color: $curious-secondary;
+    font-size: 5rem;
+    width: 50vw;
+    font-family: $font-family-sans-serif;
+    border-bottom: 1vh solid $curious-primary;
+  }
+}
