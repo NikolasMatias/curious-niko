@@ -5,10 +5,9 @@
 .titulo {
   margin-top: 2vh;
   margin-bottom: 2vh;
-  height: 10vh;
   justify-content: center;
   display: flex;
-  width: 100vw;
+  width: 100%;
   text-align: center;
 
   & > .classico {
@@ -17,5 +16,20 @@
     width: 50vw;
     font-family: $font-family-sans-serif;
     border-bottom: 1vh solid $curious-primary;
+  }
+
+  & > .subtitulo {
+    background-color: $curious-secondary;
+    font-size: 1.2rem;
+    width: 50vw;
+    font-family: $font-family-sans-serif;
+  }
+
+  & > .titulo-ul {
+    background-color: $curious-primary;
+    border: 2px solid $curious-secondary;
+    padding: 10px;
+    font-size: 1.2rem;
+    font-family: $font-family-sans-serif;
   }
 }

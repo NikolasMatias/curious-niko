@@ -13,8 +13,7 @@ class QuestionsService {
 
         })
             .then((response) => {
-                console.log(response);
-                return response;
+                return {dados: response.data, status: response.status};
             })
             .catch((errors) => {
                 console.log(errors);
@@ -41,18 +40,31 @@ class QuestionsService {
             });
     }
 
-    public static setQuestion({to, anon, question, in_response_to, _ob = 'noregisterOrSignin2'} : {to : string, anon : boolean, question : string, in_response_to : string, _ob : string}) {
-        return api.post('v2/post/create', {
+    public static setQuestion({to, anon, question, in_response_to, _ob = 'noregisterOrSignin2'} : {to : string, anon : boolean, question : string, in_response_to? : string, _ob? : string}) {
+        let formData = new FormData();
+        formData.append('to', to);
+        formData.append('anon', anon.toString());
+        formData.append('question', question);
+        formData.append('in_response_to', in_response_to ?? 'undefined');
+        formData.append('_ob', _ob);
+
+        /*let e = {
             to : to,
             anon : anon,
             question : question,
-            in_response_to : in_response_to,
+            in_response_to : in_response_to ?? 'undefined',
             _ob : _ob
 
+        };*/
+
+        return api.post('v2/post/create', formData, {
+            headers: {
+                'Authorization': ''
+            }
         })
             .then((response) => {
             console.log(response);
-            return response;
+                return {dados: response.data, status: response.status};
         })
             .catch((errors) => {
                 console.log(errors);

@@ -4,6 +4,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import Sobre from './resources/views/Sobre';
+import Curioso from './resources/views/Curioso';
 import Error from './resources/views/Error';
 import reportWebVitals from './reportWebVitals';
 
@@ -12,7 +13,7 @@ ReactDOM.render(
         <Switch>
             <Route path="/" exact={true} component={App} />
             <Route path="/sobre" component={Sobre} />
-            <Route path="/curious" component={Sobre} />
+            <Route path="/curioso" component={Curioso} />
             <Route path="*" component={Error} />
         </Switch>
     </ BrowserRouter>,

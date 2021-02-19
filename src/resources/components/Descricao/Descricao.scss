@@ -1,0 +1,41 @@
+@import "../../sass/layout/variables";
+
+@import "../../sass/variables";
+
+.descricao {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  font-family: $font-family-sans-serif;
+
+  & > .conteudo {
+    background-color: $curious-background-light;
+    padding: 30px;
+    width: 60vw;
+    & > p {
+      margin: 15px;
+      color: $curious-text
+    }
+
+    & > nav {
+      display: flex;
+      justify-content: center;
+      & > ul {
+        text-align: center;
+
+        & > li {
+          background-color: $curious-secondary;
+          border: 1px solid $curious-primary;
+          margin: 4px;
+          padding: 10px;
+          list-style: none;
+
+          & > p {
+            font-weight: bold;
+            font-size: .9rem;
+          }
+        }
+      }
+    }
+  }
+}

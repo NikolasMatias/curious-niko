@@ -3,7 +3,6 @@ import logo from './logo.svg';
 import './App.scss';
 import QuestionsService from './api/curiouscat/v2/QuestionsService';
 import {Helmet} from 'react-helmet';
-import { Link } from 'react-router-dom';
 import * as FaIcons from 'react-icons/fa';
 import Menu from './resources/components/Menu/Menu';
 
@@ -21,17 +20,10 @@ function App() {
           <Menu />
           <div className="App">
               <header className="App-header">
-                  <FaIcons.FaBinoculars className="App-logo App-link" alt="logo"/>
+                  <FaIcons.FaBinoculars className="App-logo App-link"/>
                   <p>
                       Bem vindo ao Curious Niko
                   </p>
-                  <Link to="/sobre">
-                      <a
-                          className="App-link"
-                          rel="noopener noreferrer">
-                          Sobre
-                      </a>
-                  </Link>
               </header>
           </div>
       </>

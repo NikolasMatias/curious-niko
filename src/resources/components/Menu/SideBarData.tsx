@@ -14,5 +14,11 @@ export default [
         path: '/sobre',
         icon: <FaIcons.FaInfo />,
         cName: 'nav-text'
+    },
+    {
+        title: 'Curioso',
+        path: '/curioso',
+        icon: <FaIcons.FaBinoculars />,
+        cName: 'nav-text'
     }
 ];
