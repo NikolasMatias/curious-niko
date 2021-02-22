@@ -44,6 +44,7 @@ function Curioso() {
 
     const curiousPerfil = async data => {
         return new Promise(resolve => {
+            consoe.log(process.env);
             QuestionsService.getList({username: data.perfil}).then(({dados, status}) => {
                 if (typeof dados.id != 'undefined') {
                     setPerfil(dados);
