@@ -27,20 +27,19 @@ class QuestionsService {
                 _ob : _ob
             },
             headers: {
-                Authorization: authorization.basic_token
+                Authorization: authorization['basic_token_curiouscat']
             }
         })
             .then((response) => {
-                console.log(response);
                 return response;
             })
             .catch((errors) => {
-                console.log(errors);
                 return errors;
             });
     }
 
-    public static setQuestion({to, anon, question, in_response_to, _ob = 'noregisterOrSignin2'} : {to : string, anon : boolean, question : string, in_response_to? : string, _ob? : string}) {
+    public static setQuestion({to, anon, question, in_response_to, _ob = 'noregisterOrSignin2', authorization_key, authorization_boolean}
+    : {to : string, anon : boolean, question : string, in_response_to? : string, _ob? : string, authorization_key? : string, authorization_boolean? : boolean}) {
         let formData = new FormData();
         formData.append('to', to);
         formData.append('anon', anon.toString());
@@ -59,15 +58,13 @@ class QuestionsService {
 
         return api.post('v2/post/create', formData, {
             headers: {
-                'Authorization': ''
+                'Authorization': authorization_boolean ? (typeof authorization_key === 'string' ? authorization_key : authorization.basic_token_curiouscat) : ''
             }
         })
             .then((response) => {
-            console.log(response);
                 return {dados: response.data, status: response.status};
         })
             .catch((errors) => {
-                console.log(errors);
                 return errors;
             });
     }

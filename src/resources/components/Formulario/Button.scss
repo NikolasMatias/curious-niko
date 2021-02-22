@@ -1,0 +1,54 @@
+@import "../../sass/layout/variables";
+
+@import "../../sass/variables";
+
+.button {
+  &.form-submit {
+    font-size: 1.3rem;
+    padding: 5px 15px;
+    background-color: $curious-primary;
+    color: $curious-secondary;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  &.form-submit-1 {
+    font-size: 3rem;
+    height: 10vh;
+    width: 10vw;
+    background-color: $curious-primary;
+    color: $curious-secondary;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  &.form-submit-2 {
+    margin-right: 30px;
+    padding: 10px;
+    background-color: $curious-secondary;
+    color: $curious-primary;
+    border: 1px solid $curious-primary;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    & .conteudo {
+      margin-left: 0;
+    }
+  }
+}
+
+
+.icn-spinner {
+  animation: spin-animation 7s infinite;
+}
+
+@keyframes spin-animation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,38 @@
+@import "../../sass/layout/variables";
+
+@import "../../sass/variables";
+
+.formulario {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+
+  &.formulario_perfil {
+    & .form-input-text {
+      font-size: 1.3rem;
+      padding: 5px 0;
+      margin-right: 5px;
+
+      &.validado {
+        background-color: rgba(195, 248, 97, .7) !important;
+        color: #93f861 !important;
+      }
+
+      &.invalido {
+        background-color: #fe5e61 !important;
+        color: #c35e61 !important;
+      ;
+      }
+    }
+
+    & .form-submit {
+      font-size: 1.3rem;
+      padding: 5px 15px;
+      background-color: $curious-primary;
+      color: $curious-secondary;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  }
+}

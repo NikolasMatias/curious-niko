@@ -3,6 +3,7 @@ import {Helmet} from 'react-helmet';
 import './Curioso.scss';
 import Titulo from '../components/Titulo/Titulo';
 import Menu from '../components/Menu/Menu';
+import Button from '../components/Formulario/Button';
 import QuestionsService from '../../api/curiouscat/v2/QuestionsService'
 import {useForm} from 'react-hook-form';
 import * as FaIcons from "react-icons/fa";
@@ -21,59 +22,100 @@ function separar(base : any, max : number) {
 function Curioso() {
     var [perfil, setPerfil] = useState({username: ''});
     var [validacaoPerfil, setValidacaoPerfil] = useState(0);
-    var [listaPerguntasEnviadas, setListaPerguntasEnviadas] = useState([]);
+    var [listaPerguntasEnviadas, setListaPerguntasEnviadas] : Array<any>= useState([]);
     var [grupoPerguntas, setGrupoPerguntas] = useState(pergutnasProgramadas);
 
-
-    //const { register, handleSubmit, errors} = useForm();
     const pesquisaPerfil = useForm();
     const questoesForm = useForm();
 
     const atualizarListaPerguntasEnviadas = (dados : any) => {
-        setListaPerguntasEnviadas([...dados, ...listaPerguntasEnviadas] as any);
+        if (Array.isArray(dados))
+            setListaPerguntasEnviadas([...dados, ...listaPerguntasEnviadas] as any);
+        else
+            setListaPerguntasEnviadas([dados, ...listaPerguntasEnviadas] as any);
+    };
+
+    const atualizarListaPerguntasCompleta = (dados : any) => {
+        if (Array.isArray(dados))
+            setListaPerguntasEnviadas([...dados] as any);
+        else
+            setListaPerguntasEnviadas([dados] as any);
     };
 
     const curiousPerfil = async data => {
-        let {dados, status} = await QuestionsService.getList({username: data.perfil});
-
-        if (typeof dados.id != 'undefined') {
-            setPerfil(dados);
-            setValidacaoPerfil(1);
-        } else {
-            setValidacaoPerfil(-1);
-        }
+        return new Promise(resolve => {
+            QuestionsService.getList({username: data.perfil}).then(({dados, status}) => {
+                if (typeof dados.id != 'undefined') {
+                    setPerfil(dados);
+                    setValidacaoPerfil(1);
+                    resolve({sucess: true});
+                } else {
+                    setValidacaoPerfil(-1);
+                    resolve({sucess: true});
+                }
+            }).catch((errors) => {
+                console.log(errors);
+                resolve({sucess: true});
+            });
+        });
     };
 
     const sendQuestion = async data => {
-        let {dados, status} : {dados : any, status : any} = await QuestionsService.setQuestion({to: perfil.username, anon: true, question: data.questao});
-
-        if (typeof dados.success != 'undefined' && dados.success) {
-            atualizarListaPerguntasEnviadas({
-                success: dados.success,
-                dados: dados,
-                perfil: perfil,
-                envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
+        return new Promise(resolve => {
+            QuestionsService.setQuestion({to: perfil.username, anon: true, question: data.questao}).then(({dados, status}) => {
+                if (typeof dados.success != 'undefined' && dados.success) {
+                    atualizarListaPerguntasEnviadas({
+                        success: dados.success,
+                        dados: dados,
+                        perfil: perfil,
+                        envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
+                    });
+                    resolve({success: true});
+                } else {
+                    atualizarListaPerguntasEnviadas({
+                        success: false,
+                        dados: dados,
+                        perfil: perfil,
+                        envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
+                    });
+                    resolve({success: true});
+                }
+            }).catch((errors) => {
+                console.log(errors);
+                resolve({success: true});
             });
-        } else {
-            atualizarListaPerguntasEnviadas({
-                success: false,
-                dados: dados,
-                perfil: perfil,
-                envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
-            });
-        }
-
-        console.log(dados);
+        });
     };
 
-    const sendGroupQuestions = async data => {
-        let ListaPerguntas = separar(data.perguntas, 10);
-        let listaPerguntasEnviadasLocais = listaPerguntasEnviadas;
+    const reSendQuestion = async (data : any, key : any) => {
+        return new Promise(async resolve => {
+            let {dados, status} : {dados : any, status : any} = await QuestionsService.setQuestion(data.envio_pergunta);
 
-        ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
-            setTimeout(() => {
-                listaPergunta.forEach((item : any, index) => {
-                    QuestionsService.setQuestion({to: perfil.username, anon: true, question: item.questao})
+            if (typeof dados.success != 'undefined' && dados.success) {
+                listaPerguntasEnviadas[key]['success'] = dados.success as any ;
+                listaPerguntasEnviadas[key].dados = dados as any ;
+
+                atualizarListaPerguntasCompleta(listaPerguntasEnviadas);
+                resolve({success: true});
+            } else {
+                listaPerguntasEnviadas[key].success = false as boolean;
+                listaPerguntasEnviadas[key].dados = dados as any;
+
+                atualizarListaPerguntasCompleta(listaPerguntasEnviadas);
+                resolve({success: true});
+            }
+        });
+    };
+
+    const sendGroupQuestions = async (data : any, index : any) => {
+        return new Promise(resolve => {
+            let ListaPerguntas = separar(data.perguntas, 10);
+            let listaPerguntasEnviadasLocais = [];
+
+            ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
+                setTimeout(() => {
+                    listaPergunta.forEach((item : any, indexLista) => {
+                        QuestionsService.setQuestion({to: perfil.username, anon: true, question: item.questao, authorization_boolean: (indexListaPergunta <= 1)})
                             .then((resultado : {dados: any, status: any}) => {
                                 if (typeof resultado.dados.success != 'undefined' && resultado.dados.success) {
                                     listaPerguntasEnviadasLocais = [{
@@ -93,37 +135,50 @@ function Curioso() {
 
                                 atualizarListaPerguntasEnviadas(listaPerguntasEnviadasLocais);
                             }).catch((error) => {
-                                console.log(error);
+                            console.log(error);
                         });
-                });
-            }, (32500*(indexListaPergunta) + (indexListaPergunta === 0 ? 0 : 30000)));
+                    });
+
+                    setTimeout(() => {
+                        if (ListaPerguntas.length === (indexListaPergunta+1)) {
+                            resolve({success: true});
+                        }
+                    }, 2000);
+                }, (32500*(indexListaPergunta) + (indexListaPergunta === 0 ? 0 : 30000)));
+            });
         });
     };
 
-    const sendFakeGroupQuestions = async data => {
-        let ListaPerguntas = separar(data.perguntas, 10);
-        let listaPerguntasEnviadasLocais = listaPerguntasEnviadas;
+    const sendFakeGroupQuestions = async (data : any, index : any) => {
+        return new Promise((resolve : any) => {
+            let ListaPerguntas = separar(data.perguntas, 10);
+            let listaPerguntasEnviadasLocais = [];
 
-        ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
-            setTimeout(() => {
-                listaPergunta.forEach((item : any, index) => {
-                    listaPerguntasEnviadasLocais = [{
-                        success: true,
-                        dados: {success: true},
-                        perfil: perfil,
-                        envio_pergunta: {to: perfil.username, anon: true, question: item.questao}
-                    }, ...listaPerguntasEnviadasLocais] as any;
+            ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
+                setTimeout(() => {
+                    listaPergunta.forEach((item : any, indexLista) => {
+                        listaPerguntasEnviadasLocais = [{
+                            success: true,
+                            dados: {success: true},
+                            perfil: perfil,
+                            envio_pergunta: {to: perfil.username, anon: true, question: item.questao}
+                        }, ...listaPerguntasEnviadasLocais] as any;
 
-                    atualizarListaPerguntasEnviadas(listaPerguntasEnviadasLocais);
-                });
+                        atualizarListaPerguntasEnviadas(listaPerguntasEnviadasLocais);
+                    });
 
-                console.log('pasei por aqui fora');
-            }, 1000);
+                    if (ListaPerguntas.length === (indexListaPergunta+1)) {
+                        resolve({success: true});
+                    }
+                }, 1000);
+            });
         });
     };
 
     const verErro = async data => {
-        console.log(data);
+        return new Promise(resolve => {
+            console.log(data);
+        });
     };
 
     const validarInputPerfil = () => {
@@ -143,7 +198,7 @@ function Curioso() {
             <div className="formulario formulario_perfil">
                 <form onSubmit={pesquisaPerfil.handleSubmit(curiousPerfil)}>
                     <input type="text" placeholder="Pesquisar Perfil" name="perfil" className={validacaoPerfil === 0 ? 'form-input-text' : (validacaoPerfil === 1 ? 'form-input-text validado' : 'form-input-text invalido')} ref={pesquisaPerfil.register}/>
-                    <button type="submit" className="form-submit" onSubmit={pesquisaPerfil.handleSubmit(curiousPerfil)}><FaIcons.FaArrowLeft /></button>
+                    <Button type="button" classNames="form-submit" usesForm={pesquisaPerfil} onClick={pesquisaPerfil.handleSubmit(curiousPerfil)} esconder={true}><FaIcons.FaArrowLeft/></Button>
                 </form>
             </div>
             <div className={validacaoPerfil != 1 ? 'esconder' : ''}>
@@ -151,7 +206,7 @@ function Curioso() {
                 <div className="formulario formulario_questoes">
                     <form onSubmit={questoesForm.handleSubmit(sendQuestion)}>
                         <textarea name="questao" className="form-textarea" placeholder="Mande uma pergunta para a pessoa" ref={questoesForm.register}></textarea>
-                        <button type="submit" className="form-submit-1" onSubmit={questoesForm.handleSubmit(sendQuestion)}><FaIcons.FaArrowLeft /></button>
+                        <Button type="button" classNames="form-submit-1" onClick={questoesForm.handleSubmit(sendQuestion)} esconder={true}><FaIcons.FaArrowLeft /></Button>
                     </form>
                 </div>
             </div>
@@ -159,15 +214,15 @@ function Curioso() {
                 <Titulo tipo="subtitulo">Grupo de Perguntas</Titulo>
                 <nav className="nav-lista-perguntas-processadas">
                     <ul className="lista-perguntas-processadas">
-                        {grupoPerguntas.map((item : any, index) => {
+                        {grupoPerguntas.map((item : any, index: number) => {
                             return (
                                 <li key={index} className="elemento-pergunta-processadas">
                                     <div className="processado-1">
                                         <p><b>Grupo Nome:</b> {item.nome_grupo}</p>
                                     </div>
                                     <div className="processado-2">
-                                        <button type="button" onClick={() => sendGroupQuestions(item)}>Enviar Perguntas</button>
-                                        <button type="button" onClick={() => sendFakeGroupQuestions(item)}>Enviar Fake Perguntas</button>
+                                        <Button type="button" onClick={() => sendGroupQuestions(item, index)} classNames="form-submit-2" esconder={false}>Enviar Perguntas</Button>
+                                        <Button type="button" onClick={() => sendFakeGroupQuestions(item, index)} classNames="form-submit-2" esconder={false}>Enviar Fake Perguntas</Button>
                                     </div>
                                 </li>
                             );
@@ -188,8 +243,8 @@ function Curioso() {
                                     </div>
                                     <div className="processado-2">
                                         <p className="status_envio">{item.success ? 'Enviado com Sucesso' : 'Problema ao enviar'}</p>
-                                        {!item.success ? <button type="button" onClick={() => verErro(item.dados)}>Ver o Erro</button> : ''}
-                                        {!item.success ? <button type="button">Reenviar</button> : ''}
+                                        {!item.success ? <Button type="button" onClick={() => verErro(item.dados)} esconder={false}>Ver o Erro</Button> : ''}
+                                        {!item.success ? <Button type="button" onClick={() => reSendQuestion(item, index)} esconder={false}>Reenviar</Button> : ''}
                                     </div>
                                 </li>
                             );

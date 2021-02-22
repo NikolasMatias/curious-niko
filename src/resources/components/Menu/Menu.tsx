@@ -12,7 +12,7 @@ function Menu(props : any) {
     const showSidebar = () => setSidebar(!sidebar);
 
     return (
-        <>
+        <div className="menu">
             <IconContext.Provider value={{color: '#fff'}}>
                 <div className="navbar">
                     <Link to="#" className="menu-bars">
@@ -39,7 +39,7 @@ function Menu(props : any) {
                     </ul>
                 </nav>
             </IconContext.Provider>
-        </>
+        </div>
     );
 }
 

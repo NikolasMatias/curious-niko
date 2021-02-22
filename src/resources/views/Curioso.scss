@@ -67,6 +67,8 @@
   margin: 10px;
 
   & .lista-perguntas-processadas {
+    display: flex;
+    flex-direction: column;
 
     & .elemento-pergunta-processadas {
       width: 80vw;
@@ -114,4 +116,17 @@
 
 .esconder {
   display: none;
+}
+
+.icn-spinner {
+  animation: spin-animation 20s infinite;
+}
+
+@keyframes spin-animation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
