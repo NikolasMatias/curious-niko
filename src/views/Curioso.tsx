@@ -30,10 +30,6 @@ function Curioso() {
     const pesquisaPerfil = useForm();
     const questoesForm = useForm();
 
-    window.getPerfil = () => {
-        return perfil
-    }
-
     const updateSentQuestions = (dados : any) => {
         if (Array.isArray(dados))
             setSentQuestions([...dados, ...sentQuestions] as any);
@@ -92,7 +88,7 @@ function Curioso() {
     const sendGroupQuestions = async (data : GroupQuestion, index : number) => {
         return new Promise(resolve => {
             let groupOfQuestions = separar(data.questions, 10);
-            let sentLocalQuestions = [];
+            let sentLocalQuestions: SentQuestion[] = [];
 
             groupOfQuestions.forEach((questions, indexQuetions) => {
                 setTimeout(() => {
@@ -100,7 +96,7 @@ function Curioso() {
                         QuestionsService.setQuestion({to: perfil?.username, anon: true, question: item.question, authorization_boolean: (indexQuetions <= 1)})
                             .then((resultado : {dados: any, status: any}) => {
                                 sentLocalQuestions = [{
-                                    success: resultado?.dados?.success || false,
+                                    success: resultado.dados.success || false,
                                     dados: resultado.dados,
                                     perfil: perfil,
                                     envio_pergunta: {to: perfil?.username, anon: true, question: item.question}
