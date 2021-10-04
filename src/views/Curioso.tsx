@@ -4,7 +4,7 @@ import './Curioso.scss';
 import Titulo from '../components/Titulo/Titulo';
 import Menu from '../components/Menu/Menu';
 import Button from '../components/Formulario/Button';
-import QuestionsService from '../../api/curiouscat/v2/QuestionsService'
+import QuestionsService from '../services/api/curiouscat/v2/QuestionsService'
 import {useForm} from 'react-hook-form';
 import * as FaIcons from "react-icons/fa";
 import pergutnasProgramadas from './PerguntasProgramadas';

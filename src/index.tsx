@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import './index.css';
 import App from './App';
-import Sobre from './resources/views/Sobre';
-import Curioso from './resources/views/Curioso';
-import Error from './resources/views/Error';
+import Sobre from './views/Sobre';
+import Curioso from './views/Curioso';
+import Error from './views/Error';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(

@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../App.scss';
+import '../App.scss';
 import {Helmet} from 'react-helmet';
 import Titulo from '../components/Titulo/Titulo';
 import Descricao from '../components/Descricao/Descricao';

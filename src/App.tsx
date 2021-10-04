@@ -1,10 +1,10 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.scss';
-import QuestionsService from './api/curiouscat/v2/QuestionsService';
+import QuestionsService from './services/api/curiouscat/v2/QuestionsService';
 import {Helmet} from 'react-helmet';
 import * as FaIcons from 'react-icons/fa';
-import Menu from './resources/components/Menu/Menu';
+import Menu from './components/Menu/Menu';
 
 function App() {
   //QuestionsService.getList({username: 'to_mirio'});

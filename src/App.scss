@@ -11,6 +11,10 @@
   font-family: $font-family-sans-serif;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 .home, .reports, .produts {
   display: flex;
   height: 90vh;
