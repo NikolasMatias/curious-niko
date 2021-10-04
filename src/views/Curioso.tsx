@@ -8,6 +8,9 @@ import QuestionsService from '../services/api/curiouscat/v2/QuestionsService'
 import {useForm} from 'react-hook-form';
 import * as FaIcons from "react-icons/fa";
 import pergutnasProgramadas from './PerguntasProgramadas';
+import Profile from "../models/Profile";
+import SentQuestion from "../models/SentQuestion";
+import GroupQuestion from "../models/GroupQuestion";
 
 function separar(base : any, max : number) {
     let res : any = [];
@@ -20,67 +23,53 @@ function separar(base : any, max : number) {
 }
 
 function Curioso() {
-    var [perfil, setPerfil] = useState({username: ''});
-    var [validacaoPerfil, setValidacaoPerfil] = useState(0);
-    var [listaPerguntasEnviadas, setListaPerguntasEnviadas] : Array<any>= useState([]);
-    var [grupoPerguntas, setGrupoPerguntas] = useState(pergutnasProgramadas);
+    const [perfil, setPerfil] = useState<Profile|null>(null);
+    const [sentQuestions, setSentQuestions] = useState<SentQuestion[]>([]);
+    const [groupQuestions, setGroupQuestions] = useState<GroupQuestion[]>(pergutnasProgramadas);
 
     const pesquisaPerfil = useForm();
     const questoesForm = useForm();
 
-    const atualizarListaPerguntasEnviadas = (dados : any) => {
+    window.getPerfil = () => {
+        return perfil
+    }
+
+    const updateSentQuestions = (dados : any) => {
         if (Array.isArray(dados))
-            setListaPerguntasEnviadas([...dados, ...listaPerguntasEnviadas] as any);
+            setSentQuestions([...dados, ...sentQuestions] as any);
         else
-            setListaPerguntasEnviadas([dados, ...listaPerguntasEnviadas] as any);
+            setSentQuestions([dados, ...sentQuestions] as any);
     };
 
-    const atualizarListaPerguntasCompleta = (dados : any) => {
+    const updateAllSentQuestions = (dados : any) => {
         if (Array.isArray(dados))
-            setListaPerguntasEnviadas([...dados] as any);
+            setSentQuestions([...dados] as any);
         else
-            setListaPerguntasEnviadas([dados] as any);
+            setSentQuestions([dados] as any);
     };
 
     const curiousPerfil = async data => {
         return new Promise(resolve => {
-            console.log(process.env);
-            QuestionsService.getList({username: data.perfil}).then(({dados, status}) => {
-                if (typeof dados.id != 'undefined') {
-                    setPerfil(dados);
-                    setValidacaoPerfil(1);
-                    resolve({sucess: true});
-                } else {
-                    setValidacaoPerfil(-1);
-                    resolve({sucess: true});
-                }
+            QuestionsService.getList({username: data.perfil}).then((profile) => {
+                setPerfil(profile)
+                resolve({sucess: true})
             }).catch((errors) => {
-                console.log(errors);
-                resolve({sucess: true});
+                setPerfil(null)
+                resolve({sucess: false})
             });
         });
     };
 
     const sendQuestion = async data => {
         return new Promise(resolve => {
-            QuestionsService.setQuestion({to: perfil.username, anon: true, question: data.questao}).then(({dados, status}) => {
-                if (typeof dados.success != 'undefined' && dados.success) {
-                    atualizarListaPerguntasEnviadas({
-                        success: dados.success,
-                        dados: dados,
-                        perfil: perfil,
-                        envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
-                    });
-                    resolve({success: true});
-                } else {
-                    atualizarListaPerguntasEnviadas({
-                        success: false,
-                        dados: dados,
-                        perfil: perfil,
-                        envio_pergunta: {to: perfil.username, anon: true, question: data.questao}
-                    });
-                    resolve({success: true});
-                }
+            QuestionsService.setQuestion({to: perfil?.username, anon: true, question: data.question}).then(({dados, status}) => {
+                updateSentQuestions({
+                    success: dados.success || false,
+                    dados: dados,
+                    perfil: perfil,
+                    envio_pergunta: {to: perfil?.username, anon: true, question: data.question}
+                })
+                resolve(true)
             }).catch((errors) => {
                 console.log(errors);
                 resolve({success: true});
@@ -92,83 +81,66 @@ function Curioso() {
         return new Promise(async resolve => {
             let {dados, status} : {dados : any, status : any} = await QuestionsService.setQuestion(data.envio_pergunta);
 
-            if (typeof dados.success != 'undefined' && dados.success) {
-                listaPerguntasEnviadas[key]['success'] = dados.success as any ;
-                listaPerguntasEnviadas[key].dados = dados as any ;
+            sentQuestions[key]['success'] = dados.success || false;
+            sentQuestions[key].dados = dados;
 
-                atualizarListaPerguntasCompleta(listaPerguntasEnviadas);
-                resolve({success: true});
-            } else {
-                listaPerguntasEnviadas[key].success = false as boolean;
-                listaPerguntasEnviadas[key].dados = dados as any;
-
-                atualizarListaPerguntasCompleta(listaPerguntasEnviadas);
-                resolve({success: true});
-            }
+            updateAllSentQuestions(sentQuestions);
+            resolve({success: true});
         });
     };
 
-    const sendGroupQuestions = async (data : any, index : any) => {
+    const sendGroupQuestions = async (data : GroupQuestion, index : number) => {
         return new Promise(resolve => {
-            let ListaPerguntas = separar(data.perguntas, 10);
-            let listaPerguntasEnviadasLocais = [];
+            let groupOfQuestions = separar(data.questions, 10);
+            let sentLocalQuestions = [];
 
-            ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
+            groupOfQuestions.forEach((questions, indexQuetions) => {
                 setTimeout(() => {
-                    listaPergunta.forEach((item : any, indexLista) => {
-                        QuestionsService.setQuestion({to: perfil.username, anon: true, question: item.questao, authorization_boolean: (indexListaPergunta <= 1)})
+                    questions.forEach((item : any, indexLista) => {
+                        QuestionsService.setQuestion({to: perfil?.username, anon: true, question: item.question, authorization_boolean: (indexQuetions <= 1)})
                             .then((resultado : {dados: any, status: any}) => {
-                                if (typeof resultado.dados.success != 'undefined' && resultado.dados.success) {
-                                    listaPerguntasEnviadasLocais = [{
-                                        success: resultado.dados.success,
-                                        dados: resultado.dados,
-                                        perfil: perfil,
-                                        envio_pergunta: {to: perfil.username, anon: true, question: item.questao}
-                                    }, ...listaPerguntasEnviadasLocais] as any;
-                                } else {
-                                    listaPerguntasEnviadasLocais = [{
-                                        success: false,
-                                        dados: resultado.dados,
-                                        perfil: perfil,
-                                        envio_pergunta: {to: perfil.username, anon: true, question: item.questao}
-                                    }, ...listaPerguntasEnviadasLocais] as any;
-                                }
+                                sentLocalQuestions = [{
+                                    success: resultado?.dados?.success || false,
+                                    dados: resultado.dados,
+                                    perfil: perfil,
+                                    envio_pergunta: {to: perfil?.username, anon: true, question: item.question}
+                                }, ...sentLocalQuestions];
 
-                                atualizarListaPerguntasEnviadas(listaPerguntasEnviadasLocais);
+                                updateSentQuestions(sentLocalQuestions);
                             }).catch((error) => {
                             console.log(error);
                         });
                     });
 
                     setTimeout(() => {
-                        if (ListaPerguntas.length === (indexListaPergunta+1)) {
+                        if (groupOfQuestions.length === (indexQuetions+1)) {
                             resolve({success: true});
                         }
                     }, 2000);
-                }, (32500*(indexListaPergunta) + (indexListaPergunta === 0 ? 0 : 30000)));
+                }, (32500*(indexQuetions) + (indexQuetions === 0 ? 0 : 30000)));
             });
         });
     };
 
-    const sendFakeGroupQuestions = async (data : any, index : any) => {
+    const sendFakeGroupQuestions = async (data : GroupQuestion, index : number) => {
         return new Promise((resolve : any) => {
-            let ListaPerguntas = separar(data.perguntas, 10);
-            let listaPerguntasEnviadasLocais = [];
+            let groupOfQuestions = separar(data.questions, 10);
+            let sentLocalQuestions = [];
 
-            ListaPerguntas.forEach((listaPergunta, indexListaPergunta) => {
+            groupOfQuestions.forEach((questions, indexQuetions) => {
                 setTimeout(() => {
-                    listaPergunta.forEach((item : any, indexLista) => {
-                        listaPerguntasEnviadasLocais = [{
+                    questions.forEach((item : any, indexLista) => {
+                        sentLocalQuestions = [{
                             success: true,
                             dados: {success: true},
                             perfil: perfil,
-                            envio_pergunta: {to: perfil.username, anon: true, question: item.questao}
-                        }, ...listaPerguntasEnviadasLocais] as any;
+                            envio_pergunta: {to: perfil?.username, anon: true, question: item.question}
+                        }, ...sentLocalQuestions] as any;
 
-                        atualizarListaPerguntasEnviadas(listaPerguntasEnviadasLocais);
+                        updateSentQuestions(sentLocalQuestions);
                     });
 
-                    if (ListaPerguntas.length === (indexListaPergunta+1)) {
+                    if (groupOfQuestions.length === (indexQuetions+1)) {
                         resolve({success: true});
                     }
                 }, 1000);
@@ -198,28 +170,28 @@ function Curioso() {
             <Titulo tipo="subtitulo">Selecionar Perfil</Titulo>
             <div className="formulario formulario_perfil">
                 <form onSubmit={pesquisaPerfil.handleSubmit(curiousPerfil)}>
-                    <input type="text" placeholder="Pesquisar Perfil" name="perfil" className={validacaoPerfil === 0 ? 'form-input-text' : (validacaoPerfil === 1 ? 'form-input-text validado' : 'form-input-text invalido')} ref={pesquisaPerfil.register}/>
+                    <input type="text" placeholder="Pesquisar Perfil" name="perfil" className={perfil === null ? 'form-input-text' : (perfil?.username ? 'form-input-text validado' : 'form-input-text invalido')} ref={pesquisaPerfil.register}/>
                     <Button type="button" classNames="form-submit" usesForm={pesquisaPerfil} onClick={pesquisaPerfil.handleSubmit(curiousPerfil)} esconder={true}><FaIcons.FaArrowLeft/></Button>
                 </form>
             </div>
-            <div className={validacaoPerfil != 1 ? 'esconder' : ''}>
+            <div className={perfil === null ? 'esconder' : ''}>
                 <Titulo tipo="subtitulo">Faça Perguntas</Titulo>
                 <div className="formulario formulario_questoes">
                     <form onSubmit={questoesForm.handleSubmit(sendQuestion)}>
-                        <textarea name="questao" className="form-textarea" placeholder="Mande uma pergunta para a pessoa" ref={questoesForm.register}></textarea>
+                        <textarea name="question" className="form-textarea" placeholder="Mande uma pergunta para a pessoa" ref={questoesForm.register}></textarea>
                         <Button type="button" classNames="form-submit-1" onClick={questoesForm.handleSubmit(sendQuestion)} esconder={true}><FaIcons.FaArrowLeft /></Button>
                     </form>
                 </div>
             </div>
-            <div className={validacaoPerfil != 1 ? 'esconder' : ''}>
+            <div className={perfil === null ? 'esconder' : ''}>
                 <Titulo tipo="subtitulo">Grupo de Perguntas</Titulo>
                 <nav className="nav-lista-perguntas-processadas">
                     <ul className="lista-perguntas-processadas">
-                        {grupoPerguntas.map((item : any, index: number) => {
+                        {groupQuestions.map((item : any, index: number) => {
                             return (
                                 <li key={index} className="elemento-pergunta-processadas">
                                     <div className="processado-1">
-                                        <p><b>Grupo Nome:</b> {item.nome_grupo}</p>
+                                        <p><b>Grupo Nome:</b> {item.group_name}</p>
                                     </div>
                                     <div className="processado-2">
                                         <Button type="button" onClick={() => sendGroupQuestions(item, index)} classNames="form-submit-2" esconder={false}>Enviar Perguntas</Button>
@@ -231,11 +203,11 @@ function Curioso() {
                     </ul>
                 </nav>
             </div>
-            <div className={listaPerguntasEnviadas.length === 0 ? 'esconder' : ''}>
-                <Titulo tipo="subtitulo">Perguntas Processadas {'(Numero: '+listaPerguntasEnviadas.length+')'}</Titulo>
+            <div className={sentQuestions.length === 0 ? 'esconder' : ''}>
+                <Titulo tipo="subtitulo">Perguntas Processadas {'(Numero: '+sentQuestions.length+')'}</Titulo>
                 <nav className="nav-lista-perguntas-processadas">
                     <ul className="lista-perguntas-processadas">
-                        {listaPerguntasEnviadas.map((item : any, index) => {
+                        {sentQuestions.map((item : any, index) => {
                             return (
                                 <li key={index} className={item.success ? 'elemento-pergunta-processadas' : 'elemento-pergunta-processadas falha'}>
                                     <div className="processado-1">

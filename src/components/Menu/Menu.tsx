@@ -43,7 +43,7 @@ function Menu(props : any) {
                     <ul className="nav-menu-items">
                         <li key={`10000`} className="nav-titulo">
                             <Link to="/">
-                                <span>CURIOUS</span>
+                                <span>CURIOUS NIKO</span>
                             </Link>
                         </li>
                         {sideBarData.map((item : any, index : any) => {

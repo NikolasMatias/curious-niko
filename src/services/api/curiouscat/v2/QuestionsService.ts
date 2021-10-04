@@ -1,24 +1,27 @@
 import api from '../../api_curiouscat';
 import authorization from '../../authorization';
+import Profile from "../../../../models/Profile";
 
 //authorization Basic token
 class QuestionsService {
-    public static getList({username, max_timestamp, _ob = 'noregisterOrSignin2'} : {username : string, max_timestamp? : string, _ob? : string}) {
-        return api.get('v2.1/profile', {
-            params: {
-                username : username,
-                max_timestamp : max_timestamp,
-                _ob : _ob
-            }
+    public static getList({username, max_timestamp, _ob = 'noregisterOrSignin2'} : {username : string, max_timestamp? : string, _ob? : string}): Promise<Profile> {
+        return new Promise((resolve, reject) => {
+            return api.get('v2.1/profile', {
+                params: {
+                    username : username,
+                    max_timestamp : max_timestamp,
+                    _ob : _ob
+                }
 
-        })
-            .then((response) => {
-                return {dados: response.data, status: response.status};
             })
-            .catch((errors) => {
-                console.log(errors);
-                return errors;
-            });
+                .then((response) => {
+                    if (response.data.error === 404) {
+                        reject(response)
+                    }
+
+                    resolve(response.data)
+                })
+        })
     }
 
     public static profile ({_ob = 'noregisterOrSignin2'} : {_ob? : string}) {
@@ -39,9 +42,9 @@ class QuestionsService {
     }
 
     public static setQuestion({to, anon, question, in_response_to, _ob = 'noregisterOrSignin2', authorization_key, authorization_boolean}
-    : {to : string, anon : boolean, question : string, in_response_to? : string, _ob? : string, authorization_key? : string, authorization_boolean? : boolean}) {
+    : {to : string|null|undefined, anon : boolean, question : string, in_response_to? : string, _ob? : string, authorization_key? : string, authorization_boolean? : boolean}) {
         let formData = new FormData();
-        formData.append('to', to);
+        formData.append('to', to || '');
         formData.append('anon', anon.toString());
         formData.append('question', question);
         formData.append('in_response_to', in_response_to ?? 'undefined');

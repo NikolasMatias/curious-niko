@@ -11,7 +11,6 @@ function Button(props : any) {
 
     const processamento = () => {
         atualizarCarregador(true);
-        console.log(typeof props.onClick);
         props.onClick().then((result) => {
             atualizarCarregador(false);
         }).catch((error) => {
